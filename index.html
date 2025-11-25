@@ -1,0 +1,264 @@
+# MatrixShop
+shop
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neon Nike Shop</title>
+
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --text: #ffffff;
+      --card: #1a1a1a;
+      --neon: #0ff;
+      --neon2: #f0f;
+    }
+
+    body.light {
+      --bg: #f2f2f2;
+      --text: #000;
+      --card: #ffffff;
+      --neon: #2ad;
+      --neon2: #a3f;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      font-family: Arial;
+      transition: 0.4s;
+    }
+
+    header {
+      padding: 1.5rem;
+      text-align: center;
+      background: var(--card);
+      box-shadow: 0 0 20px var(--neon);
+    }
+
+    header h1 {
+      color: var(--neon);
+      font-size: 3rem;
+      text-shadow: 0 0 20px var(--neon);
+      animation: glow 2s infinite alternate;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 5px var(--neon); }
+      to { text-shadow: 0 0 25px var(--neon2); }
+    }
+
+    /* Кнопки переключения */
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      border: none;
+      cursor: pointer;
+      background: var(--neon);
+      color: #000;
+      border-radius: 5px;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: var(--neon2);
+      transform: scale(1.05);
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 2rem auto;
+      display: grid;
+      gap: 2rem;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    .product {
+      background: var(--card);
+      border-radius: 10px;
+      padding: 1rem;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0,255,255,0.3);
+      transition: 0.3s;
+    }
+
+    .product:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 30px rgba(0,255,255,0.5);
+    }
+
+    .product img {
+      width: 100%;
+      border-radius: 5px;
+      margin-bottom: 1rem;
+    }
+
+    .price {
+      font-size: 1.3rem;
+      color: lime;
+      margin-bottom: 1rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background: var(--card);
+    }
+
+  </style>
+</head>
+<body>
+
+<header>
+  <h1 id="title">Neon Nike Shop</h1>
+
+  <div class="controls">
+    <button onclick="toggleTheme()" id="btn-theme">Тёмная тема</button>
+    <button onclick="setLang('ru')" id="btn-ru">Русский</button>
+    <button onclick="setLang('kz')" id="btn-kz">Қазақша</button>
+    <button onclick="openCart()" id="btn-cart">Корзина</button>
+  </div>
+</header>
+
+<div class="container" id="products"></div>
+
+<footer>
+  &copy; 2025 Neon Nike Shop
+</footer>
+
+<script>
+/* --------------------------
+   ДАННЫЕ ТОВАРОВ
+--------------------------- */
+
+const items = [
+  {
+    id: 1,
+    name_ru: "Nike Tech Fleece",
+    name_kz: "Nike Tech Fleece",
+    price: 80900,
+    img: "https://via.placeholder.com/300x300?text=Tech+Fleece"
+  },
+  {
+    id: 2,
+    name_ru: "Nike Court Штаны",
+    name_kz: "Nike Court Шалбар",
+    price: 24000,
+    img: "https://via.placeholder.com/300x300?text=Court+Pants"
+  },
+  {
+    id: 3,
+    name_ru: "Футболка Nike",
+    name_kz: "Nike Футболка",
+    price: 30000,
+    img: "https://via.placeholder.com/300x300?text=Nike+T-Shirt"
+  }
+];
+
+/* --------------------------
+   РЕНДЕР ТОВАРОВ
+--------------------------- */
+
+let lang = "ru"; // ЯЗЫК ПО УМОЛЧАНИЮ
+let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+
+function renderProducts() {
+  let html = "";
+  items.forEach(p => {
+    html += `
+      <div class="product">
+        <img src="${p.img}">
+        <h3>${p["name_" + lang]}</h3>
+        <div class="price">₸ ${p.price}</div>
+        <button onclick="addToCart(${p.id})">${translate("buy")}</button>
+      </div>`;
+  });
+  document.getElementById("products").innerHTML = html;
+}
+
+/* --------------------------
+   ПЕРЕВОДЫ
+--------------------------- */
+
+const dict = {
+  buy: { ru: "Купить", kz: "Сатып алу" },
+  cartTitle: { ru: "Корзина", kz: "Себет" },
+  empty: { ru: "Корзина пустая", kz: "Себет бос" },
+};
+
+function translate(key) {
+  return dict[key][lang];
+}
+
+/* --------------------------
+   ЯЗЫК
+--------------------------- */
+
+function setLang(l) {
+  lang = l;
+  renderProducts();
+}
+
+/* --------------------------
+   ТЕМА
+--------------------------- */
+
+let dark = true;
+
+function toggleTheme() {
+  dark = !dark;
+  document.body.classList.toggle("light");
+
+  document.getElementById("btn-theme").innerText =
+    dark ? "Тёмная тема" : "Светлая тема";
+}
+
+/* --------------------------
+   КОРЗИНА
+--------------------------- */
+
+function addToCart(id) {
+  cart.push(id);
+  localStorage.setItem("cart", JSON.stringify(cart));
+  alert("Добавлено!");
+}
+
+function openCart() {
+  if (cart.length === 0) {
+    alert(translate("empty"));
+    return;
+  }
+
+  let message = translate("cartTitle") + ":\n\n";
+  let sum = 0;
+
+  cart.forEach(id => {
+    let item = items.find(x => x.id === id);
+    message += item["name_" + lang] + " — ₸" + item.price + "\n";
+    sum += item.price;
+  });
+
+  message += "\nИтого: ₸" + sum;
+
+  alert(message);
+}
+
+/* --------------------------
+   ЗАПУСК
+--------------------------- */
+renderProducts();
+
+</script>
+
+</body>
+</html>
